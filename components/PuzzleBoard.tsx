@@ -66,7 +66,7 @@ function TextRun({ content }: { content: string }) {
 }
 
 function BracketView({ node, game }: { node: PuzzleNode; game: UsePuzzleGame }) {
-  const { game: state, input, popNodeId, shakeNodeId, setActive } = game;
+  const { game: state, popNodeId, shakeNodeId, setActive } = game;
   const solved = state.solved.has(node.id);
   const solvable = isNodeSolvable(node, state.solved);
   const active = state.activeNodeId === node.id;
@@ -89,20 +89,25 @@ function BracketView({ node, game }: { node: PuzzleNode; game: UsePuzzleGame }) 
     );
   }
 
+  // Active solvable bracket — the player's input lives in the ControlsBar box,
+  // not inside the prose. The active bracket is a brighter pill that still
+  // shows its clue, marking "this is what you're answering right now."
   if (active && solvable) {
     return (
       <span
         className={
-          "inline whitespace-nowrap rounded-[4px] px-[3px] " +
+          "inline rounded-[4px] px-[3px] " +
           (shaking ? "animate-shake inline-block" : "")
         }
-        style={{ backgroundColor: "#a5b4fc", color: "#1e1b4b" }}
+        style={{
+          backgroundColor: "#a5b4fc",
+          color: "#1e1b4b",
+          boxShadow: "0 0 0 2px #6366f1",
+        }}
+        aria-current="true"
       >
         <span aria-hidden style={{ opacity: 0.65 }}>[</span>
-        <span style={{ fontWeight: 600 }}>
-          {renderActiveContent(node, input, peeked)}
-          <span className="caret" />
-        </span>
+        <span>{peeked ? renderPeek(node) : renderLeafClue(node, state.solved)}</span>
         <span aria-hidden style={{ opacity: 0.65 }}>]</span>
       </span>
     );
@@ -166,12 +171,3 @@ function renderPeek(node: PuzzleNode): React.ReactNode {
   );
 }
 
-function renderActiveContent(
-  node: PuzzleNode,
-  input: string,
-  peeked: boolean,
-): React.ReactNode {
-  if (input) return <TextRun content={input} />;
-  if (peeked) return <TextRun content={(node.answer ?? "")[0] ?? ""} />;
-  return <span style={{ opacity: 0.4, fontWeight: 400 }}>הקלידו…</span>;
-}
