@@ -23,9 +23,7 @@ interface InternalState {
 
 type Action =
   | { type: "setActive"; nodeId: string | null }
-  | { type: "appendChar"; ch: string }
-  | { type: "backspace" }
-  | { type: "clear" }
+  | { type: "setInput"; value: string }
   | { type: "submit"; puzzle: Puzzle }
   | { type: "peek"; puzzle: Puzzle }
   | { type: "reveal"; puzzle: Puzzle }
@@ -52,20 +50,15 @@ function reducer(state: InternalState, action: Action): InternalState {
         input: "",
       };
     }
-    case "appendChar": {
-      if (!state.game.activeNodeId) return state;
+    case "setInput": {
+      if (state.input === action.value) return state;
+      const delta = Math.max(0, action.value.length - state.input.length);
       return {
         ...state,
-        input: state.input + action.ch,
-        game: { ...state.game, keystrokes: state.game.keystrokes + 1 },
+        input: action.value,
+        game: { ...state.game, keystrokes: state.game.keystrokes + delta },
       };
     }
-    case "backspace": {
-      if (!state.input) return state;
-      return { ...state, input: state.input.slice(0, -1) };
-    }
-    case "clear":
-      return { ...state, input: "" };
     case "submit": {
       const nodeId = state.game.activeNodeId;
       if (!nodeId || !state.input.trim()) return state;
@@ -155,6 +148,21 @@ export function usePuzzleGame(puzzle: Puzzle) {
     dispatch({ type: "setActive", nodeId });
   }, []);
 
+  const setInputValue = useCallback((value: string) => {
+    dispatch({ type: "setInput", value });
+  }, []);
+
+  const cycleActive = useCallback(
+    (direction: "prev" | "next") => {
+      const leaves = getSolvableLeaves(puzzle.tree, stateRef.current.game.solved);
+      if (leaves.length === 0) return;
+      const idx = leaves.findIndex((n) => n.id === stateRef.current.game.activeNodeId);
+      const next = leaves[(idx + (direction === "prev" ? -1 : 1) + leaves.length) % leaves.length];
+      if (next) dispatch({ type: "setActive", nodeId: next.id });
+    },
+    [puzzle.tree],
+  );
+
   const submit = useCallback(() => {
     dispatch({ type: "submit", puzzle });
   }, [puzzle]);
@@ -189,46 +197,24 @@ export function usePuzzleGame(puzzle: Puzzle) {
     }
   }, [solvableLeaves, state.game.activeNodeId, state.game.solved, puzzle.tree, complete]);
 
-  // Global keystroke capture — the plan says "just start typing"
+  // The answer input in ControlsBar owns all typing + Enter/Tab/Escape. We
+  // keep a tiny global fallback: if the player clicks somewhere off the input
+  // and starts typing a printable character, refocus the input so no keystroke
+  // is lost (matches bracket.city's "just start typing" affordance).
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (complete) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
-
-      if (e.key === "Enter") {
-        e.preventDefault();
-        submit();
-        return;
-      }
-      if (e.key === "Backspace") {
-        e.preventDefault();
-        dispatch({ type: "backspace" });
-        return;
-      }
-      if (e.key === "Escape") {
-        dispatch({ type: "clear" });
-        return;
-      }
-      if (e.key === "Tab") {
-        e.preventDefault();
-        const leaves = getSolvableLeaves(puzzle.tree, stateRef.current.game.solved);
-        const idx = leaves.findIndex((n) => n.id === stateRef.current.game.activeNodeId);
-        const next = leaves[(idx + (e.shiftKey ? -1 : 1) + leaves.length) % leaves.length];
-        if (next) dispatch({ type: "setActive", nodeId: next.id });
-        return;
-      }
-      if (e.key.length === 1 && !e.repeat) {
-        // accept any printable char (Hebrew, Latin, digits, space, punctuation)
-        if (/[\s\u0590-\u05FFa-zA-Z0-9'"\u05F3\u05F4\-]/.test(e.key)) {
-          dispatch({ type: "appendChar", ch: e.key });
-        }
-      }
+      if (e.key.length !== 1) return;
+      if (!/[\s\u0590-\u05FFa-zA-Z0-9'"\u05F3\u05F4\-]/.test(e.key)) return;
+      const input = document.querySelector<HTMLInputElement>('input[aria-label="תיבת התשובה"]');
+      if (input && document.activeElement !== input) input.focus();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [submit, puzzle.tree, complete]);
+  }, [complete]);
 
   return {
     game: state.game,
@@ -239,6 +225,8 @@ export function usePuzzleGame(puzzle: Puzzle) {
     shakeNodeId: state.shakeNodeId,
     complete,
     setActive,
+    setInputValue,
+    cycleActive,
     submit,
     peek,
     reveal,
