@@ -1,0 +1,100 @@
+"use client";
+
+import { computeLiveScore } from "@/lib/puzzle";
+import type { Puzzle } from "@/lib/puzzle";
+import type { UsePuzzleGame } from "./usePuzzleGame";
+
+export function HUD({
+  puzzle,
+  game,
+  streak,
+  hasPrev,
+  hasNext,
+  onPrev,
+  onNext,
+  onShowHelp,
+}: {
+  puzzle: Puzzle;
+  game: UsePuzzleGame;
+  streak: number;
+  hasPrev: boolean;
+  hasNext: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+  onShowHelp: () => void;
+}) {
+  const liveScore = computeLiveScore(puzzle, game.game);
+  const solvedCount = game.game.solved.size;
+
+  return (
+    <div className="flex items-center justify-between gap-3 pb-3 border-b border-[#e7e0d0]">
+      <button
+        type="button"
+        aria-label="עזרה"
+        onClick={onShowHelp}
+        className="w-8 h-8 rounded-full border border-[#e7e0d0] text-[#6b6356] hover:bg-[#e7e0d0]/40 transition flex items-center justify-center puzzle-mono"
+      >
+        ?
+      </button>
+
+      <div className="flex-1 text-center">
+        <div className="puzzle-mono text-[15px] tracking-wider uppercase">
+          🟢 [עיר הסוגריים] 🟢
+        </div>
+        <div className="puzzle-mono text-[12px] text-[#6b6356] mt-0.5 flex items-center justify-center gap-2">
+          <NavArrow direction="prev" disabled={!hasPrev} onClick={onPrev} />
+          <span>{formatHebrewDate(puzzle.date)}</span>
+          <NavArrow direction="next" disabled={!hasNext} onClick={onNext} />
+        </div>
+        <div className="puzzle-mono text-[11px] text-[#6b6356] mt-0.5">
+          🔥 רצף: {streak} · ניקוד: {liveScore} · {solvedCount}/{puzzle.totalBrackets}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        aria-label="מידע"
+        onClick={onShowHelp}
+        className="w-8 h-8 rounded-full border border-[#e7e0d0] text-[#6b6356] hover:bg-[#e7e0d0]/40 transition flex items-center justify-center puzzle-mono"
+      >
+        !
+      </button>
+    </div>
+  );
+}
+
+function NavArrow({
+  direction,
+  disabled,
+  onClick,
+}: {
+  direction: "prev" | "next";
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  // In RTL: "prev" (older) points right (←), "next" (newer) points left (→)
+  // From the reader's perspective, "back" = later-in-text = right arrow glyph.
+  const glyph = direction === "prev" ? "→" : "←";
+  return (
+    <button
+      type="button"
+      aria-label={direction === "prev" ? "פאזל קודם" : "פאזל הבא"}
+      onClick={onClick}
+      disabled={disabled}
+      className="px-1 disabled:opacity-25 disabled:cursor-not-allowed hover:opacity-100 opacity-80 transition"
+    >
+      {glyph}
+    </button>
+  );
+}
+
+function formatHebrewDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d
+      .toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" })
+      .replace(/\s+/g, " ");
+  } catch {
+    return iso;
+  }
+}

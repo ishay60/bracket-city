@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #fbfaf4;
+  --card: #ffffff;
+  --ink: #171412;
+  --muted: #6b6356;
+  --rule: #e7e0d0;
+  --leaf-fill: #c7d2fe;
+  --leaf-fill-strong: #a5b4fc;
+  --leaf-text: #1e1b4b;
+  --leaf-border: #6366f1;
+  --peek: #fde68a;
+  --wrong: #fecaca;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: "David Libre", "Frank Ruhl Libre", "Times New Roman", serif;
+  font-feature-settings: "kern" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Latin/digit runs in the puzzle — render monospace to match bracket.city's typewriter feel */
+.puzzle-mono {
+  font-family: "IBM Plex Mono", "Menlo", ui-monospace, monospace;
+  font-feature-settings: "tnum" 1;
+}
+
+bdi { unicode-bidi: isolate; }
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* Caret animation for in-place bracket input */
+@keyframes caretBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.caret { display: inline-block; width: 2px; height: 1em; background: currentColor; vertical-align: text-bottom; margin-inline-start: 2px; animation: caretBlink 1s steps(2, start) infinite; }
