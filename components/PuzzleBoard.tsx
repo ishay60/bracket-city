@@ -77,7 +77,10 @@ function BracketView({ node, game }: { node: PuzzleNode; game: UsePuzzleGame }) 
 
   if (solved) {
     return (
-      <span className={justSolved ? "inline-block animate-solvePop" : "inline"}>
+      <span
+        className={justSolved ? "inline-block animate-solvePop" : "inline"}
+        aria-label={revealed ? `נחשף: ${node.answer}` : `נפתר: ${node.answer}`}
+      >
         {revealed ? (
           <span className="underline decoration-dotted decoration-rose-400/70 underline-offset-2">
             <TextRun content={node.answer ?? ""} />
@@ -104,7 +107,9 @@ function BracketView({ node, game }: { node: PuzzleNode; game: UsePuzzleGame }) 
           color: "#1e1b4b",
           boxShadow: "0 0 0 2px #6366f1",
         }}
+        role="group"
         aria-current="true"
+        aria-label={`סוגר פעיל — רמז: ${node.clue ?? ""}${peeked ? " (הוצץ)" : ""}`}
       >
         <span aria-hidden style={{ opacity: 0.65 }}>[</span>
         <span>{peeked ? renderPeek(node) : renderLeafClue(node, state.solved)}</span>
@@ -118,10 +123,11 @@ function BracketView({ node, game }: { node: PuzzleNode; game: UsePuzzleGame }) 
       <button
         type="button"
         onClick={() => setActive(node.id)}
-        className="inline rounded-[4px] px-[3px] cursor-pointer transition-colors"
+        className="inline rounded-[4px] px-[3px] cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366f1]"
         style={{ backgroundColor: "#c7d2fe", color: "#1e1b4b", fontFamily: "inherit", fontSize: "inherit" }}
         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#a5b4fc")}
         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#c7d2fe")}
+        aria-label={`סוגר פתיר — רמז: ${node.clue ?? ""}${peeked ? " (הוצץ)" : ""}. לחצו להפעלה.`}
       >
         <span aria-hidden style={{ opacity: 0.65 }}>[</span>
         <span>{peeked ? renderPeek(node) : renderLeafClue(node, state.solved)}</span>
@@ -132,7 +138,7 @@ function BracketView({ node, game }: { node: PuzzleNode; game: UsePuzzleGame }) 
 
   // LOCKED — plain inline `[` `]` as part of the prose
   return (
-    <span>
+    <span role="group" aria-label="סוגר נעול — השלימו את הסוגרים שבפנים">
       <span>[</span>
       {(node.children ?? []).map((c) => (
         <NodeView key={c.id} node={c} game={game} />
