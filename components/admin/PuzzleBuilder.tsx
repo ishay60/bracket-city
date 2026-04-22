@@ -34,9 +34,9 @@ const STARTER = {
   ] as AnswerRow[],
 };
 
-export function PuzzleBuilder() {
+export function PuzzleBuilder({ initialDate }: { initialDate?: string } = {}) {
   const [title, setTitle] = useState(STARTER.title);
-  const [date, setDate] = useState(STARTER.date);
+  const [date, setDate] = useState(initialDate ?? STARTER.date);
   const [finalSentence, setFinalSentence] = useState(STARTER.finalSentence);
   const [historicalContext, setHistoricalContext] = useState(STARTER.historicalContext);
   const [bracketString, setBracketString] = useState(STARTER.bracketString);

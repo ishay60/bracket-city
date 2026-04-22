@@ -7,6 +7,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminPage() {
-  return <PuzzleBuilder />;
+export default function AdminPage({
+  searchParams,
+}: {
+  searchParams?: { date?: string | string[] };
+}) {
+  const raw = searchParams?.date;
+  const requested = Array.isArray(raw) ? raw[0] : raw;
+  const initialDate = /^\d{4}-\d{2}-\d{2}$/.test(requested ?? "") ? requested : undefined;
+  return <PuzzleBuilder initialDate={initialDate} />;
 }
