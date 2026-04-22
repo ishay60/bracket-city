@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   buildPuzzle,
   parseBracketString,
+  puzzleToBuildInput,
   serializePuzzleForExport,
   validatePuzzleAuthoring,
 } from "@/lib/puzzle";
@@ -34,13 +35,28 @@ const STARTER = {
   ] as AnswerRow[],
 };
 
-export function PuzzleBuilder({ initialDate }: { initialDate?: string } = {}) {
-  const [title, setTitle] = useState(STARTER.title);
-  const [date, setDate] = useState(initialDate ?? STARTER.date);
-  const [finalSentence, setFinalSentence] = useState(STARTER.finalSentence);
-  const [historicalContext, setHistoricalContext] = useState(STARTER.historicalContext);
-  const [bracketString, setBracketString] = useState(STARTER.bracketString);
-  const [rows, setRows] = useState<AnswerRow[]>(STARTER.rows);
+export function PuzzleBuilder({
+  initialDate,
+  initialPuzzle,
+}: {
+  initialDate?: string;
+  initialPuzzle?: Puzzle;
+} = {}) {
+  const seed = initialPuzzle ? puzzleToSeed(initialPuzzle) : null;
+  const editingId = initialPuzzle?.id ?? null;
+
+  const [title, setTitle] = useState(seed?.title ?? STARTER.title);
+  const [date, setDate] = useState(seed?.date ?? initialDate ?? STARTER.date);
+  const [finalSentence, setFinalSentence] = useState(
+    seed?.finalSentence ?? STARTER.finalSentence,
+  );
+  const [historicalContext, setHistoricalContext] = useState(
+    seed?.historicalContext ?? STARTER.historicalContext,
+  );
+  const [bracketString, setBracketString] = useState(
+    seed?.bracketString ?? STARTER.bracketString,
+  );
+  const [rows, setRows] = useState<AnswerRow[]>(seed?.rows ?? STARTER.rows);
 
   const parsed = useMemo(() => {
     try {
@@ -89,7 +105,7 @@ export function PuzzleBuilder({ initialDate }: { initialDate?: string } = {}) {
     if (!validation.ok) return null;
     try {
       return buildPuzzle({
-        id: `draft-${date}`,
+        id: editingId ?? `draft-${date}`,
         date,
         title,
         finalSentence,
@@ -100,7 +116,16 @@ export function PuzzleBuilder({ initialDate }: { initialDate?: string } = {}) {
     } catch {
       return null;
     }
-  }, [validation.ok, date, title, finalSentence, historicalContext, bracketString, specs]);
+  }, [
+    validation.ok,
+    editingId,
+    date,
+    title,
+    finalSentence,
+    historicalContext,
+    bracketString,
+    specs,
+  ]);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
@@ -113,7 +138,7 @@ export function PuzzleBuilder({ initialDate }: { initialDate?: string } = {}) {
             🏙️ עיר הסוגריים · סטודיו החידות
           </h1>
           <p className="puzzle-mono text-[12px] mt-1" style={{ color: "#6b6356" }}>
-            Phase 3 · Puzzle Builder
+            {editingId ? `Editing · ${editingId}` : "Phase 3 · Puzzle Builder"}
           </p>
         </div>
         <nav className="puzzle-mono text-[13px] flex items-center gap-3" style={{ color: "#6b6356" }}>
@@ -444,4 +469,21 @@ function reconstructBracketString(puzzle: Puzzle): string {
     return (n.children ?? []).map(walk).join("");
   };
   return walk(puzzle.tree);
+}
+
+function puzzleToSeed(puzzle: Puzzle) {
+  const input = puzzleToBuildInput(puzzle);
+  return {
+    title: input.title,
+    date: input.date,
+    finalSentence: input.finalSentence,
+    historicalContext: input.historicalContext ?? "",
+    bracketString: input.bracketString,
+    rows: input.specs.map<AnswerRow>((s) => ({
+      answer: s.answer,
+      accepted: (s.acceptedAnswers ?? []).join(", "),
+      difficulty: (s.difficulty ?? "") as AnswerRow["difficulty"],
+      clueType: (s.clueType ?? "") as AnswerRow["clueType"],
+    })),
+  };
 }
