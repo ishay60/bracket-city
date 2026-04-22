@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { samplePuzzles } from "@/lib/puzzle/samplePuzzles";
+import {
+  monthGrid,
+  monthKey,
+  monthOf,
+  parseMonth,
+  stepMonth,
+  todayISO,
+} from "@/lib/calendar";
 
 export const metadata: Metadata = {
   title: "לוח שנה",
@@ -23,15 +31,15 @@ export default function CalendarPage({
   const sorted = [...samplePuzzles].sort((a, b) => b.date.localeCompare(a.date));
   const focus = parseMonth(searchParams?.month) ?? monthOf(sorted[0]?.date ?? todayISO());
   const { year, month } = focus;
-  const days = monthGrid(year, month);
+  const days = monthGrid(focus);
   const heMonth = new Date(year, month - 1, 1).toLocaleDateString("he-IL", {
     month: "long",
     year: "numeric",
   });
-  const prevMonth = stepMonth(year, month, -1);
-  const nextMonth = stepMonth(year, month, 1);
+  const prevMonth = stepMonth(focus, -1);
+  const nextMonth = stepMonth(focus, 1);
 
-  const inMonth = samplePuzzles.filter((p) => p.date.startsWith(monthKey(year, month)));
+  const inMonth = samplePuzzles.filter((p) => p.date.startsWith(monthKey(focus)));
   const published = inMonth.length;
   const gaps = days.filter((d) => d.inMonth && !byDate.has(d.iso)).length;
 
@@ -69,7 +77,7 @@ export default function CalendarPage({
 
       <div className="flex items-center justify-between gap-3 mb-4">
         <Link
-          href={`/admin/calendar?month=${prevMonth.year}-${String(prevMonth.month).padStart(2, "0")}`}
+          href={`/admin/calendar?month=${monthKey(prevMonth)}`}
           className="puzzle-mono text-[12px] px-3 py-1 rounded-md"
           style={{ border: "1px solid #e7e0d0", color: "#171412" }}
         >
@@ -83,7 +91,7 @@ export default function CalendarPage({
           {heMonth}
         </div>
         <Link
-          href={`/admin/calendar?month=${nextMonth.year}-${String(nextMonth.month).padStart(2, "0")}`}
+          href={`/admin/calendar?month=${monthKey(nextMonth)}`}
           className="puzzle-mono text-[12px] px-3 py-1 rounded-md"
           style={{ border: "1px solid #e7e0d0", color: "#171412" }}
         >
@@ -243,62 +251,3 @@ function Legend() {
   );
 }
 
-function parseMonth(s: string | undefined): { year: number; month: number } | null {
-  if (!s) return null;
-  const m = /^(\d{4})-(\d{1,2})$/.exec(s);
-  if (!m) return null;
-  const year = Number(m[1]);
-  const month = Number(m[2]);
-  if (month < 1 || month > 12) return null;
-  return { year, month };
-}
-
-function monthOf(iso: string): { year: number; month: number } {
-  const [y, m] = iso.split("-");
-  return { year: Number(y), month: Number(m) };
-}
-
-function monthKey(year: number, month: number): string {
-  return `${year}-${String(month).padStart(2, "0")}`;
-}
-
-function todayISO(): string {
-  return formatISO(new Date());
-}
-
-function formatISO(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function stepMonth(year: number, month: number, delta: number): { year: number; month: number } {
-  const d = new Date(year, month - 1 + delta, 1);
-  return { year: d.getFullYear(), month: d.getMonth() + 1 };
-}
-
-interface Day {
-  iso: string;
-  day: number;
-  inMonth: boolean;
-}
-
-/**
- * 6-row grid of days starting on Sunday (Hebrew calendars read the week as
- * Sun–Sat, matching Google Calendar's Hebrew locale).
- */
-function monthGrid(year: number, month: number): Day[] {
-  const first = new Date(year, month - 1, 1);
-  const startDow = first.getDay();
-  const out: Day[] = [];
-  for (let i = 0; i < 42; i++) {
-    const d = new Date(year, month - 1, i - startDow + 1);
-    out.push({
-      iso: formatISO(d),
-      day: d.getDate(),
-      inMonth: d.getMonth() === month - 1,
-    });
-  }
-  return out;
-}
