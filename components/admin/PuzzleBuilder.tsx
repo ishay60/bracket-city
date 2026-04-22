@@ -117,6 +117,10 @@ export function PuzzleBuilder() {
           </p>
         </div>
         <nav className="puzzle-mono text-[13px] flex items-center gap-3" style={{ color: "#6b6356" }}>
+          <Link href="/admin/calendar" className="underline-offset-4 hover:underline">
+            לוח שנה →
+          </Link>
+          <span style={{ opacity: 0.4 }}>·</span>
           <Link href="/admin/archive" className="underline-offset-4 hover:underline">
             ארכיון →
           </Link>
