@@ -88,13 +88,23 @@ export default function ArchivePage() {
                   </span>
                 ))}
               </div>
-              <Link
-                href={`/?date=${p.date}`}
-                className="puzzle-mono text-[12px]"
-                style={{ color: "#171412" }}
-              >
-                [play] →
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/admin?id=${encodeURIComponent(p.id)}`}
+                  className="puzzle-mono text-[12px]"
+                  style={{ color: "#4c1d95" }}
+                  aria-label={`ערוך חידה מ-${p.date}`}
+                >
+                  [edit] ✎
+                </Link>
+                <Link
+                  href={`/?date=${p.date}`}
+                  className="puzzle-mono text-[12px]"
+                  style={{ color: "#171412" }}
+                >
+                  [play] →
+                </Link>
+              </div>
             </div>
           </article>
         ))}
