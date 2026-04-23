@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { findPuzzleByDate, neighborPuzzleDate, samplePuzzle } from "@/lib/puzzle/samplePuzzles";
-import { computeScore, RANK_LABEL_HE } from "@/lib/puzzle";
+import { computeScore, findNode, RANK_LABEL_HE } from "@/lib/puzzle";
 import type { Puzzle } from "@/lib/puzzle";
 import { AnswerBank } from "./AnswerBank";
+import { Confetti } from "./Confetti";
 import { ControlsBar } from "./ControlsBar";
 import { EndGameScreen } from "./EndGameScreen";
 import { HelpDialog } from "./HelpDialog";
@@ -49,13 +50,28 @@ function GameInstance({
 }) {
   const game = usePuzzleGame(puzzle);
   const streak = useStreak();
+  const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
     if (!game.complete) return;
     const score = computeScore(puzzle, game.game);
     streak.recordCompletion(puzzle.date, score.finalScore, RANK_LABEL_HE[score.rank]);
+    setAnnouncement(
+      `נפתר! דרגה ${RANK_LABEL_HE[score.rank]}, ניקוד ${score.finalScore}. המשפט המלא: ${puzzle.finalSentence}.`,
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.complete]);
+
+  useEffect(() => {
+    if (!game.popNodeId) return;
+    const n = findNode(puzzle.tree, game.popNodeId);
+    if (n?.answer) setAnnouncement(`נפתר: ${n.answer}`);
+  }, [game.popNodeId, puzzle.tree]);
+
+  useEffect(() => {
+    if (!game.shakeNodeId) return;
+    setAnnouncement("תשובה שגויה");
+  }, [game.shakeNodeId]);
 
   const prev = neighborPuzzleDate(puzzle.date, "prev");
   const next = neighborPuzzleDate(puzzle.date, "next");
@@ -95,6 +111,8 @@ function GameInstance({
         <EndGameScreen puzzle={puzzle} game={game} streak={streak.data.current} />
       ) : null}
 
+      <Confetti active={game.complete} />
+
       <footer className="mt-6 text-center puzzle-mono text-[11px] flex items-center justify-center gap-3" style={{ color: "#6b6356" }}>
         <span>עיר הסוגריים · גרסת עברית · פאזה 3 · השראה: Bracket City מאת בן גרוס / The Atlantic</span>
         <span style={{ opacity: 0.5 }}>·</span>
@@ -102,6 +120,25 @@ function GameInstance({
       </footer>
 
       <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        style={{
+          position: "absolute",
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: "hidden",
+          clip: "rect(0,0,0,0)",
+          whiteSpace: "nowrap",
+          border: 0,
+        }}
+      >
+        {announcement}
+      </div>
     </main>
   );
 }

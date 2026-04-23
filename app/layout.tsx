@@ -1,9 +1,43 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+const title = "עיר הסוגריים — Bracket City Hebrew";
+const description = "חידת הסוגריים היומית — פענחו את המשפט החבוי, סוגר אחר סוגר.";
+
 export const metadata: Metadata = {
-  title: "עיר הסוגריים — Bracket City Hebrew",
-  description: "חידת הסוגריים היומית — פענחו את המשפט החבוי, סוגר אחר סוגר.",
+  title: {
+    default: title,
+    template: "%s · עיר הסוגריים",
+  },
+  description,
+  applicationName: "עיר הסוגריים",
+  keywords: [
+    "עיר הסוגריים",
+    "Bracket City",
+    "חידה",
+    "תשבץ עברי",
+    "משחק מילים",
+    "חידת היום",
+    "עברית",
+  ],
+  openGraph: {
+    title,
+    description,
+    type: "website",
+    locale: "he_IL",
+    siteName: "עיר הסוגריים",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
+  robots: { index: true, follow: true },
+  icons: { icon: "/favicon.ico" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#fbfaf4",
 };
 
 export default function RootLayout({

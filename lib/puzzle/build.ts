@@ -1,5 +1,10 @@
-import type { BracketSpec, Puzzle } from "./types";
-import { attachAnswers, parseBracketString, reconstructSentence } from "./parser";
+import type { BracketSpec, Puzzle, PuzzleNode } from "./types";
+import {
+  attachAnswers,
+  collectBrackets,
+  parseBracketString,
+  reconstructSentence,
+} from "./parser";
 
 export interface BuildPuzzleInput {
   id: string;
@@ -34,4 +39,35 @@ export function buildPuzzle(input: BuildPuzzleInput): Puzzle {
     language: "he",
     tags: input.tags ?? [],
   };
+}
+
+/**
+ * Inverse of buildPuzzle for the editor: turns a Puzzle back into the raw
+ * fields the builder UI works with (bracket string + per-bracket specs in
+ * DFS order). Useful for "edit existing riddle" flows.
+ */
+export function puzzleToBuildInput(puzzle: Puzzle): BuildPuzzleInput {
+  return {
+    id: puzzle.id,
+    date: puzzle.date,
+    title: puzzle.title,
+    finalSentence: puzzle.finalSentence,
+    historicalContext: puzzle.historicalContext,
+    bracketString: serializeTreeToBracketString(puzzle.tree),
+    specs: collectBrackets(puzzle.tree).map<BracketSpec>((n) => ({
+      answer: n.answer ?? "",
+      acceptedAnswers: n.acceptedAnswers,
+      clueType: n.clueType,
+      difficulty: n.difficulty,
+      hint: n.hint,
+    })),
+    tags: puzzle.tags,
+    maxScore: puzzle.maxScore,
+  };
+}
+
+function serializeTreeToBracketString(node: PuzzleNode): string {
+  if (node.type === "text") return node.content ?? "";
+  const inner = (node.children ?? []).map(serializeTreeToBracketString).join("");
+  return node.type === "bracket" ? `[${inner}]` : inner;
 }

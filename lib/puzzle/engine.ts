@@ -131,6 +131,34 @@ export function applyGuess(
   };
 }
 
+/**
+ * Bracket City accepts a typed answer for any currently solvable leaf, not only
+ * the visually active one. Prefer the active leaf when there is ambiguity.
+ */
+export function applyGuessToSolvableLeaf(
+  puzzle: Puzzle,
+  state: GameState,
+  guess: string,
+): GuessResult {
+  const leaves = getSolvableLeaves(puzzle.tree, state.solved);
+  if (leaves.length === 0) return { ok: false, reason: "unknown-node" };
+
+  const active = leaves.find((n) => n.id === state.activeNodeId);
+  const orderedLeaves = active ? [active, ...leaves.filter((n) => n.id !== active.id)] : leaves;
+  const match = orderedLeaves.find((node) =>
+    isCorrectAnswer(guess, node.answer ?? "", node.acceptedAnswers),
+  );
+
+  if (!match) {
+    state.wrongGuesses += 1;
+    state.lastWrongNodeId = state.activeNodeId ?? leaves[0]?.id ?? null;
+    state.lastWrongAt = Date.now();
+    return { ok: false, reason: "wrong" };
+  }
+
+  return applyGuess(puzzle, state, match.id, guess);
+}
+
 export function applyPeek(puzzle: Puzzle, state: GameState, nodeId: string): boolean {
   const node = findNode(puzzle.tree, nodeId);
   if (!node || node.type !== "bracket") return false;

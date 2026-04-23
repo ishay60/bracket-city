@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { samplePuzzles } from "@/lib/puzzle/samplePuzzles";
+
+export const metadata: Metadata = {
+  title: "ארכיון החידות",
+  description: "כל חידות עיר הסוגריים שפורסמו עד כה.",
+  robots: { index: false, follow: false },
+};
 
 export default function ArchivePage() {
   const sorted = [...samplePuzzles].sort((a, b) => b.date.localeCompare(a.date));
@@ -24,6 +31,10 @@ export default function ArchivePage() {
         >
           <Link href="/admin" className="underline-offset-4 hover:underline">
             ← סטודיו
+          </Link>
+          <span style={{ opacity: 0.4 }}>·</span>
+          <Link href="/admin/calendar" className="underline-offset-4 hover:underline">
+            לוח שנה
           </Link>
           <span style={{ opacity: 0.4 }}>·</span>
           <Link href="/" className="underline-offset-4 hover:underline">
@@ -77,13 +88,23 @@ export default function ArchivePage() {
                   </span>
                 ))}
               </div>
-              <Link
-                href={`/?date=${p.date}`}
-                className="puzzle-mono text-[12px]"
-                style={{ color: "#171412" }}
-              >
-                [play] →
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/admin?id=${encodeURIComponent(p.id)}`}
+                  className="puzzle-mono text-[12px]"
+                  style={{ color: "#4c1d95" }}
+                  aria-label={`ערוך חידה מ-${p.date}`}
+                >
+                  [edit] ✎
+                </Link>
+                <Link
+                  href={`/?date=${p.date}`}
+                  className="puzzle-mono text-[12px]"
+                  style={{ color: "#171412" }}
+                >
+                  [play] →
+                </Link>
+              </div>
             </div>
           </article>
         ))}

@@ -5,10 +5,11 @@ import Link from "next/link";
 import {
   buildPuzzle,
   parseBracketString,
+  puzzleToBuildInput,
   serializePuzzleForExport,
   validatePuzzleAuthoring,
 } from "@/lib/puzzle";
-import type { BracketSpec, Puzzle } from "@/lib/puzzle";
+import type { BracketSpec, BuildPuzzleInput, Puzzle } from "@/lib/puzzle";
 import { AnswersTable, emptyAnswerRow } from "./AnswersTable";
 import type { AnswerRow } from "./AnswersTable";
 import { GameContainerPreview } from "./GameContainerPreview";
@@ -34,13 +35,30 @@ const STARTER = {
   ] as AnswerRow[],
 };
 
-export function PuzzleBuilder() {
-  const [title, setTitle] = useState(STARTER.title);
-  const [date, setDate] = useState(STARTER.date);
-  const [finalSentence, setFinalSentence] = useState(STARTER.finalSentence);
-  const [historicalContext, setHistoricalContext] = useState(STARTER.historicalContext);
-  const [bracketString, setBracketString] = useState(STARTER.bracketString);
-  const [rows, setRows] = useState<AnswerRow[]>(STARTER.rows);
+export function PuzzleBuilder({
+  initialDate,
+  initialPuzzle,
+}: {
+  initialDate?: string;
+  initialPuzzle?: Puzzle;
+} = {}) {
+  const seed = initialPuzzle ? puzzleToSeed(initialPuzzle) : null;
+  const editingId = initialPuzzle?.id ?? null;
+
+  const [title, setTitle] = useState(seed?.title ?? STARTER.title);
+  const [date, setDate] = useState(seed?.date ?? initialDate ?? STARTER.date);
+  const [finalSentence, setFinalSentence] = useState(
+    seed?.finalSentence ?? STARTER.finalSentence,
+  );
+  const [historicalContext, setHistoricalContext] = useState(
+    seed?.historicalContext ?? STARTER.historicalContext,
+  );
+  const [tags] = useState<string[]>(initialPuzzle?.tags ?? []);
+  const [maxScore] = useState<number | undefined>(initialPuzzle?.maxScore);
+  const [bracketString, setBracketString] = useState(
+    seed?.bracketString ?? STARTER.bracketString,
+  );
+  const [rows, setRows] = useState<AnswerRow[]>(seed?.rows ?? STARTER.rows);
 
   const parsed = useMemo(() => {
     try {
@@ -85,22 +103,39 @@ export function PuzzleBuilder() {
     [bracketString, answers, finalSentence],
   );
 
+  const buildInput = useMemo<BuildPuzzleInput>(
+    () => ({
+      id: editingId ?? `he-${date}`,
+      date,
+      title,
+      finalSentence,
+      historicalContext,
+      bracketString,
+      specs,
+      tags,
+      maxScore,
+    }),
+    [
+      editingId,
+      date,
+      title,
+      finalSentence,
+      historicalContext,
+      bracketString,
+      specs,
+      tags,
+      maxScore,
+    ],
+  );
+
   const builtPuzzle: Puzzle | null = useMemo(() => {
     if (!validation.ok) return null;
     try {
-      return buildPuzzle({
-        id: `draft-${date}`,
-        date,
-        title,
-        finalSentence,
-        historicalContext,
-        bracketString,
-        specs,
-      });
+      return buildPuzzle(buildInput);
     } catch {
       return null;
     }
-  }, [validation.ok, date, title, finalSentence, historicalContext, bracketString, specs]);
+  }, [validation.ok, buildInput]);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
@@ -113,10 +148,14 @@ export function PuzzleBuilder() {
             🏙️ עיר הסוגריים · סטודיו החידות
           </h1>
           <p className="puzzle-mono text-[12px] mt-1" style={{ color: "#6b6356" }}>
-            Phase 3 · Puzzle Builder
+            {editingId ? `Editing · ${editingId}` : "Phase 3 · Puzzle Builder"}
           </p>
         </div>
         <nav className="puzzle-mono text-[13px] flex items-center gap-3" style={{ color: "#6b6356" }}>
+          <Link href="/admin/calendar" className="underline-offset-4 hover:underline">
+            לוח שנה →
+          </Link>
+          <span style={{ opacity: 0.4 }}>·</span>
           <Link href="/admin/archive" className="underline-offset-4 hover:underline">
             ארכיון →
           </Link>
@@ -180,7 +219,7 @@ export function PuzzleBuilder() {
 
           <ValidationPanel validation={validation} />
 
-          <ExportPanel puzzle={builtPuzzle} />
+          <ExportPanel puzzle={builtPuzzle} buildInput={buildInput} />
         </section>
 
         <aside className="space-y-4">
@@ -335,12 +374,28 @@ function ValidationPanel({ validation }: { validation: ReturnType<typeof validat
   );
 }
 
-function ExportPanel({ puzzle }: { puzzle: Puzzle | null }) {
+function ExportPanel({
+  puzzle,
+  buildInput,
+}: {
+  puzzle: Puzzle | null;
+  buildInput: BuildPuzzleInput;
+}) {
   const [copied, setCopied] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<
+    | { status: "idle" }
+    | { status: "saving" }
+    | { status: "saved"; message: string }
+    | { status: "error"; message: string }
+  >({ status: "idle" });
   const json = puzzle ? serializePuzzleForExport(puzzle) : "// תקנו שגיאות לפני ייצוא";
   const tsSnippet = puzzle
     ? buildTsSnippet(puzzle)
     : "// תקנו שגיאות לפני ייצוא";
+
+  useEffect(() => {
+    setSaveState({ status: "idle" });
+  }, [buildInput]);
 
   const copy = async (label: string, text: string) => {
     try {
@@ -349,6 +404,28 @@ function ExportPanel({ puzzle }: { puzzle: Puzzle | null }) {
       setTimeout(() => setCopied(null), 1800);
     } catch {
       /* ignore */
+    }
+  };
+
+  const save = async () => {
+    if (!puzzle) return;
+    setSaveState({ status: "saving" });
+    try {
+      const response = await fetch("/api/admin/puzzles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildInput),
+      });
+      const payload = (await response.json()) as { ok?: boolean; error?: string; path?: string };
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "שמירה נכשלה");
+      }
+      setSaveState({ status: "saved", message: `נשמר אל ${payload.path ?? "data/puzzles.json"}` });
+    } catch (error) {
+      setSaveState({
+        status: "error",
+        message: error instanceof Error ? error.message : "שמירה נכשלה",
+      });
     }
   };
 
@@ -364,6 +441,15 @@ function ExportPanel({ puzzle }: { puzzle: Puzzle | null }) {
         ייצוא
       </div>
       <div className="flex gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={save}
+          disabled={!puzzle || saveState.status === "saving"}
+          className="px-3 py-1.5 rounded-md puzzle-mono text-[12px] disabled:opacity-40"
+          style={{ backgroundColor: "#047857", color: "#ecfdf5" }}
+        >
+          {saveState.status === "saving" ? "שומר..." : "[save]"}
+        </button>
         <button
           type="button"
           onClick={() => copy("json", json)}
@@ -383,6 +469,14 @@ function ExportPanel({ puzzle }: { puzzle: Puzzle | null }) {
           {copied === "ts" ? "✓ הועתק" : "[copy TypeScript]"}
         </button>
       </div>
+      {saveState.status === "saved" || saveState.status === "error" ? (
+        <div
+          className="puzzle-mono text-[12px] mt-2"
+          style={{ color: saveState.status === "saved" ? "#047857" : "#b91c1c" }}
+        >
+          {saveState.message}
+        </div>
+      ) : null}
       <pre
         className="mt-3 rounded-md p-3 puzzle-mono text-[11px] overflow-auto max-h-64"
         style={{ backgroundColor: "#fbfaf4", border: "1px solid #e7e0d0", lineHeight: 1.5 }}
@@ -440,4 +534,21 @@ function reconstructBracketString(puzzle: Puzzle): string {
     return (n.children ?? []).map(walk).join("");
   };
   return walk(puzzle.tree);
+}
+
+function puzzleToSeed(puzzle: Puzzle) {
+  const input = puzzleToBuildInput(puzzle);
+  return {
+    title: input.title,
+    date: input.date,
+    finalSentence: input.finalSentence,
+    historicalContext: input.historicalContext ?? "",
+    bracketString: input.bracketString,
+    rows: input.specs.map<AnswerRow>((s) => ({
+      answer: s.answer,
+      accepted: (s.acceptedAnswers ?? []).join(", "),
+      difficulty: (s.difficulty ?? "") as AnswerRow["difficulty"],
+      clueType: (s.clueType ?? "") as AnswerRow["clueType"],
+    })),
+  };
 }
