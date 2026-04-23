@@ -6,8 +6,6 @@ import type { UsePuzzleGame } from "./usePuzzleGame";
 export function ControlsBar({ game }: { game: UsePuzzleGame }) {
   const activeId = game.game.activeNodeId;
   const canAct = !!game.activeNode && !game.complete;
-  const alreadyPeeked = !!activeId && game.game.peeks.has(activeId);
-  const alreadyRevealed = !!activeId && game.game.reveals.has(activeId);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -68,25 +66,9 @@ export function ControlsBar({ game }: { game: UsePuzzleGame }) {
       </div>
       <div className="flex items-center gap-3 flex-wrap">
         <span className="puzzle-mono text-[12px]" style={{ color: "#6b6356" }}>
-          אין צורך ללחוץ — פשוט התחילו להקליד. Enter לשליחה · Tab למעבר · Esc לניקוי
+          אין צורך ללחוץ — פשוט התחילו להקליד. Enter לשליחה · Tab למעבר · Esc לניקוי · לחיצה על סוגר כחול לעזרה
         </span>
         <div className="flex-1" />
-        <button
-          type="button"
-          onClick={game.peek}
-          disabled={!canAct || alreadyPeeked || alreadyRevealed}
-          className="px-3 py-1 rounded-md border border-amber-300 bg-amber-50 text-amber-800 puzzle-mono text-[12px] hover:bg-amber-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
-        >
-          [peek −5]
-        </button>
-        <button
-          type="button"
-          onClick={game.reveal}
-          disabled={!canAct || alreadyRevealed}
-          className="px-3 py-1 rounded-md border border-rose-300 bg-rose-50 text-rose-800 puzzle-mono text-[12px] hover:bg-rose-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
-        >
-          [reveal −20]
-        </button>
       </div>
     </div>
   );

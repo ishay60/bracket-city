@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { PuzzleNode } from "@/lib/puzzle";
 import { isNodeSolvable } from "@/lib/puzzle";
 import type { UsePuzzleGame } from "./usePuzzleGame";
@@ -16,6 +17,58 @@ interface Props {
  * disappear entirely.
  */
 export function PuzzleBoard({ tree, game }: Props) {
+  const [helpPrompt, setHelpPrompt] = useState<{
+    kind: "peek" | "reveal";
+    node: PuzzleNode;
+  } | null>(null);
+
+  const focusInput = () => {
+    setTimeout(() => {
+      document.querySelector<HTMLInputElement>('input[aria-label="תיבת התשובה"]')?.focus();
+    }, 0);
+  };
+
+  const closeHelpPrompt = () => {
+    setHelpPrompt(null);
+    focusInput();
+  };
+
+  const requestHelp = (node: PuzzleNode) => {
+    game.setActive(node.id);
+    setHelpPrompt({
+      kind: game.game.peeks.has(node.id) ? "reveal" : "peek",
+      node,
+    });
+  };
+
+  const confirmHelp = () => {
+    if (!helpPrompt) return;
+    if (helpPrompt.kind === "peek") {
+      game.peekNode(helpPrompt.node.id);
+    } else {
+      game.revealNode(helpPrompt.node.id);
+    }
+    setHelpPrompt(null);
+    focusInput();
+  };
+
+  useEffect(() => {
+    if (!helpPrompt) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeHelpPrompt();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [helpPrompt]);
+
+  useEffect(() => {
+    if (!helpPrompt) return;
+    if (game.complete || game.game.solved.has(helpPrompt.node.id)) {
+      setHelpPrompt(null);
+    }
+  }, [game.complete, game.game.solved, helpPrompt]);
+
   return (
     <div
       className="font-hebrew text-[19px] sm:text-[21px] leading-[1.9] text-[#171412]"
@@ -23,16 +76,35 @@ export function PuzzleBoard({ tree, game }: Props) {
     >
       <div className="whitespace-normal break-words">
         {tree.children?.map((n) => (
-          <NodeView key={n.id} node={n} game={game} />
+          <NodeView key={n.id} node={n} game={game} onHelpRequest={requestHelp} />
         ))}
       </div>
+      {helpPrompt ? (
+        <HelpConfirmDialog
+          kind={helpPrompt.kind}
+          node={helpPrompt.node}
+          solved={game.game.solved}
+          onClose={closeHelpPrompt}
+          onConfirm={confirmHelp}
+        />
+      ) : null}
     </div>
   );
 }
 
-function NodeView({ node, game }: { node: PuzzleNode; game: UsePuzzleGame }) {
+function NodeView({
+  node,
+  game,
+  onHelpRequest,
+}: {
+  node: PuzzleNode;
+  game: UsePuzzleGame;
+  onHelpRequest: (node: PuzzleNode) => void;
+}) {
   if (node.type === "text") return <TextRun content={node.content ?? ""} />;
-  if (node.type === "bracket") return <BracketView node={node} game={game} />;
+  if (node.type === "bracket") {
+    return <BracketView node={node} game={game} onHelpRequest={onHelpRequest} />;
+  }
   return null;
 }
 
@@ -65,8 +137,16 @@ function TextRun({ content }: { content: string }) {
   );
 }
 
-function BracketView({ node, game }: { node: PuzzleNode; game: UsePuzzleGame }) {
-  const { game: state, popNodeId, shakeNodeId, setActive } = game;
+function BracketView({
+  node,
+  game,
+  onHelpRequest,
+}: {
+  node: PuzzleNode;
+  game: UsePuzzleGame;
+  onHelpRequest: (node: PuzzleNode) => void;
+}) {
+  const { game: state, popNodeId, shakeNodeId } = game;
   const solved = state.solved.has(node.id);
   const solvable = isNodeSolvable(node, state.solved);
   const active = state.activeNodeId === node.id;
@@ -92,45 +172,42 @@ function BracketView({ node, game }: { node: PuzzleNode; game: UsePuzzleGame }) 
     );
   }
 
-  // Active solvable bracket — the player's input lives in the ControlsBar box,
-  // not inside the prose. The active bracket is a brighter pill that still
-  // shows its clue, marking "this is what you're answering right now."
-  if (active && solvable) {
-    return (
-      <span
-        className={
-          "inline rounded-[4px] px-[3px] " +
-          (shaking ? "animate-shake inline-block" : "")
-        }
-        style={{
+  if (solvable) {
+    const commonStyle = active
+      ? {
           backgroundColor: "#a5b4fc",
           color: "#1e1b4b",
-          boxShadow: "0 0 0 2px #6366f1",
-        }}
-        role="group"
-        aria-current="true"
-        aria-label={`סוגר פעיל — רמז: ${node.clue ?? ""}${peeked ? " (הוצץ)" : ""}`}
-      >
-        <span aria-hidden style={{ opacity: 0.65 }}>[</span>
-        <span>{peeked ? renderPeek(node) : renderLeafClue(node, state.solved)}</span>
-        <span aria-hidden style={{ opacity: 0.65 }}>]</span>
-      </span>
-    );
-  }
-
-  if (solvable) {
+          fontFamily: "inherit",
+          fontSize: "inherit",
+          boxShadow: "0 0 0 2px #6366f1, inset 0 0 0 1px rgba(30, 27, 75, 0.18)",
+        }
+      : {
+          backgroundColor: "#c7d2fe",
+          color: "#1e1b4b",
+          fontFamily: "inherit",
+          fontSize: "inherit",
+          boxShadow: "inset 0 0 0 1px rgba(30, 27, 75, 0.12)",
+        };
     return (
       <button
         type="button"
-        onClick={() => setActive(node.id)}
-        className="inline rounded-[4px] px-[3px] cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366f1]"
-        style={{ backgroundColor: "#c7d2fe", color: "#1e1b4b", fontFamily: "inherit", fontSize: "inherit" }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#a5b4fc")}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#c7d2fe")}
-        aria-label={`סוגר פתיר — רמז: ${node.clue ?? ""}${peeked ? " (הוצץ)" : ""}. לחצו להפעלה.`}
+        onClick={() => onHelpRequest(node)}
+        className={
+          "bracket-leaf rounded-[4px] px-[3px] cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366f1] " +
+          (shaking ? "animate-shake" : "")
+        }
+        style={commonStyle}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#a5b4fc";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = active ? "#a5b4fc" : "#c7d2fe";
+        }}
+        aria-current={active ? "true" : undefined}
+        aria-label={`סוגר פתיר — ${peeked ? "לחצו לחשיפה" : "לחצו לרמז"}${peeked ? " (הוצץ)" : ""}.`}
       >
         <span aria-hidden style={{ opacity: 0.65 }}>[</span>
-        <span>{peeked ? renderPeek(node) : renderLeafClue(node, state.solved)}</span>
+        <span>{peeked ? renderPeek(node, state.solved) : renderLeafClue(node, state.solved)}</span>
         <span aria-hidden style={{ opacity: 0.65 }}>]</span>
       </button>
     );
@@ -141,10 +218,88 @@ function BracketView({ node, game }: { node: PuzzleNode; game: UsePuzzleGame }) 
     <span role="group" aria-label="סוגר נעול — השלימו את הסוגרים שבפנים">
       <span>[</span>
       {(node.children ?? []).map((c) => (
-        <NodeView key={c.id} node={c} game={game} />
+        <NodeView key={c.id} node={c} game={game} onHelpRequest={onHelpRequest} />
       ))}
       <span>]</span>
     </span>
+  );
+}
+
+function HelpConfirmDialog({
+  kind,
+  node,
+  solved,
+  onClose,
+  onConfirm,
+}: {
+  kind: "peek" | "reveal";
+  node: PuzzleNode;
+  solved: Set<string>;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const isPeek = kind === "peek";
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(23, 20, 18, 0.45)" }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={isPeek ? "אישור רמז" : "אישור חשיפה"}
+    >
+      <div
+        className="w-full max-w-sm rounded-xl p-5 text-right"
+        style={{ backgroundColor: "#fbfaf4", border: "1px solid #e7e0d0" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="puzzle-mono text-[12px] tracking-wider uppercase"
+          style={{ color: isPeek ? "#b45309" : "#b91c1c" }}
+        >
+          {isPeek ? "peek −5" : "reveal −20"}
+        </div>
+        <h2 className="text-xl font-bold mt-1" style={{ fontFamily: '"David Libre", serif' }}>
+          {isPeek ? "לקבל רמז לסוגר הזה?" : "לחשוף את התשובה?"}
+        </h2>
+        <div
+          className="mt-3 rounded-md px-3 py-2 text-[15px] leading-relaxed"
+          style={{
+            backgroundColor: "#ffffff",
+            border: "1px solid #e7e0d0",
+            fontFamily: '"David Libre", serif',
+          }}
+        >
+          {renderLeafClue(node, solved)}
+        </div>
+        <p
+          className="text-[15px] leading-relaxed mt-3"
+          style={{ color: "#6b6356", fontFamily: '"David Libre", serif' }}
+        >
+          {isPeek
+            ? "האות הראשונה תופיע בסוף הרמז."
+            : "התשובה תיכנס למשפט והניקוד יופחת."}
+        </p>
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-3 py-1.5 rounded-md border border-[#e7e0d0] puzzle-mono text-[12px]"
+            style={{ color: "#171412", backgroundColor: "#ffffff" }}
+          >
+            [cancel]
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="px-3 py-1.5 rounded-md puzzle-mono text-[12px]"
+            style={{ backgroundColor: "#171412", color: "#fbfaf4" }}
+          >
+            {isPeek ? "[peek −5]" : "[reveal −20]"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -165,15 +320,15 @@ function renderLeafClue(node: PuzzleNode, solved: Set<string>): React.ReactNode 
   });
 }
 
-function renderPeek(node: PuzzleNode): React.ReactNode {
+function renderPeek(node: PuzzleNode, solved: Set<string>): React.ReactNode {
   const ans = node.answer ?? "";
   const first = ans[0] ?? "";
-  const rest = ans.slice(1);
   return (
     <span>
-      <span style={{ fontWeight: 700 }}>{first}</span>
-      <span style={{ opacity: 0.4 }}>{rest.replace(/\S/g, "·")}</span>
+      {renderLeafClue(node, solved)}{" "}
+      <span className="puzzle-mono text-[0.86em]" dir="auto" style={{ fontWeight: 700 }}>
+        ({first})
+      </span>
     </span>
   );
 }
-

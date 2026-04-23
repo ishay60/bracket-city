@@ -34,6 +34,19 @@ body {
   font-feature-settings: "tnum" 1;
 }
 
+.bracket-leaf {
+  display: inline-block;
+  line-height: 1.32;
+  margin-inline: 0.08em;
+  vertical-align: 0.02em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.bracket-leaf + .bracket-leaf {
+  margin-inline-start: 0.18em;
+}
+
 bdi { unicode-bidi: isolate; }
 
 input::-webkit-outer-spin-button,
