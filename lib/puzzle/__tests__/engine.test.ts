@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildPuzzle } from "../build";
 import {
   applyGuess,
+  applyGuessToSolvableLeaf,
   applyPeek,
   applyReveal,
   createGameState,
@@ -51,6 +52,31 @@ describe("game engine", () => {
     if (res.ok) {
       expect(res.newlySolvable.map((n) => n.id)).toContain("b0");
     }
+  });
+
+  it("solves any matching solvable leaf, even when another leaf is active", () => {
+    const p = nested();
+    const st = createGameState(p);
+    st.activeNodeId = "b1";
+
+    const res = applyGuessToSolvableLeaf(p, st, "בירה");
+
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.solvedNodeId).toBe("b2");
+    expect(st.solved.has("b2")).toBe(true);
+    expect(st.solved.has("b1")).toBe(false);
+    expect(st.activeNodeId).toBe("b1");
+  });
+
+  it("counts one wrong guess when no solvable leaf matches", () => {
+    const p = nested();
+    const st = createGameState(p);
+    const res = applyGuessToSolvableLeaf(p, st, "wrong");
+
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.reason).toBe("wrong");
+    expect(st.wrongGuesses).toBe(1);
+    expect(st.solved.size).toBe(0);
   });
 
   it("penalizes wrong guesses without marking solved", () => {

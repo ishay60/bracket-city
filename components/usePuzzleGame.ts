@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import type { Puzzle, PuzzleNode } from "@/lib/puzzle";
 import {
-  applyGuess,
+  applyGuessToSolvableLeaf,
   applyPeek,
   applyReveal,
   createGameState,
@@ -61,9 +61,9 @@ function reducer(state: InternalState, action: Action): InternalState {
     }
     case "submit": {
       const nodeId = state.game.activeNodeId;
-      if (!nodeId || !state.input.trim()) return state;
+      if (!state.input.trim()) return state;
       const nextGame = cloneGame(state.game);
-      const res = applyGuess(action.puzzle, nextGame, nodeId, state.input);
+      const res = applyGuessToSolvableLeaf(action.puzzle, nextGame, state.input);
       if (res.ok) {
         return {
           ...state,
@@ -79,7 +79,7 @@ function reducer(state: InternalState, action: Action): InternalState {
           ...state,
           game: nextGame,
           input: "",
-          shakeNodeId: nodeId,
+          shakeNodeId: nodeId ?? nextGame.lastWrongNodeId,
           popNodeId: null,
           tick: state.tick + 1,
         };
