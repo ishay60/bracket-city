@@ -118,10 +118,39 @@ const puzzle5 = buildPuzzle({
   tags: ["היסטוריה", "פוליטיקה"],
 });
 
-export const samplePuzzles: Puzzle[] = [puzzle5, puzzle4, puzzle3, puzzle2, puzzle1];
+const puzzle6 = buildPuzzle({
+  id: "he-2026-04-21",
+  date: "2026-04-21",
+  title: "חידת הסוגריים",
+  finalSentence:
+    "בפריז, הצרפתים פשוט בהו כשדיברתי אליהם בצרפתית. אף פעם לא הצלחתי לגרום לאידיוטים האלה להבין את השפה שלהם.",
+  historicalContext: "חידת ניסוי בעברית על תייר שמנסה לדבר צרפתית בפריז.",
+  bracketString:
+    "בפריז, הצ[מ[מ___ מזבח] בו פרות לנות]ים פ[ליווה את [זרם עצמאי במוזיקה][___ קרנינה] ג׳ו[משקה של מורות]] בהו כש[מפתחי [טיפול ___] לעיתים קרובות צריכים למ[עלם __]ז אותו]רתי אליהם בצרפתית. אף פעם לא הצלחתי לגרום ל[הנפש הבסיסית על פי פרויד]יוטים האלה להבין את ה[מ[עידני עידנים] על מטבח]ה [מותג דלק [אומרים עליו שהוא יוצא עם גברים ונשים]נל[מסתובב בעיקר עם חבריו הברגים]י מפורסם]הם.",
+  specs: [
+    { answer: "רפת", clueType: "wordplay", difficulty: "medium" },
+    { answer: "קום", clueType: "fill-blank", difficulty: "medium" },
+    { answer: "שוט", clueType: "trivia", difficulty: "medium" },
+    { answer: "אינדי", clueType: "association", difficulty: "easy" },
+    { answer: "אנה", clueType: "fill-blank", difficulty: "easy" },
+    { answer: "נס", clueType: "wordplay", difficulty: "easy" },
+    { answer: "דיב", clueType: "wordplay", difficulty: "hard" },
+    { answer: "פרונט", clueType: "association", difficulty: "hard" },
+    { answer: "רכ", acceptedAnswers: ["רך"], clueType: "fill-blank", difficulty: "medium" },
+    { answer: "איד", clueType: "trivia", difficulty: "easy" },
+    { answer: "שפ", acceptedAnswers: ["שף"], clueType: "wordplay", difficulty: "medium" },
+    { answer: "נצח", clueType: "definition", difficulty: "medium" },
+    { answer: "של", acceptedAnswers: ["Shell"], clueType: "trivia", difficulty: "medium" },
+    { answer: "בי", clueType: "association", difficulty: "easy" },
+    { answer: "אומ", acceptedAnswers: ["אום"], clueType: "wordplay", difficulty: "medium" },
+  ],
+  tags: ["ניסוי", "שפה", "פריז"],
+});
+
+export const samplePuzzles: Puzzle[] = [puzzle5, puzzle4, puzzle3, puzzle2, puzzle1, puzzle6];
 
 /** The "current" puzzle (newest date). */
-export const samplePuzzle: Puzzle = puzzle1;
+export const samplePuzzle: Puzzle = puzzle6;
 
 export function findPuzzleByDate(date: string): Puzzle | null {
   return samplePuzzles.find((p) => p.date === date) ?? null;
