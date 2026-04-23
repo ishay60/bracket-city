@@ -1,5 +1,7 @@
 import { buildPuzzle } from "./build";
+import type { BuildPuzzleInput } from "./build";
 import type { Puzzle } from "./types";
+import savedPuzzleInputs from "@/data/puzzles.json";
 
 /**
  * Sample Hebrew puzzles for demo. Scaled to the real Bracket City ballpark
@@ -147,10 +149,29 @@ const puzzle6 = buildPuzzle({
   tags: ["ניסוי", "שפה", "פריז"],
 });
 
-export const samplePuzzles: Puzzle[] = [puzzle5, puzzle4, puzzle3, puzzle2, puzzle1, puzzle6];
+const seedPuzzles: Puzzle[] = [puzzle5, puzzle4, puzzle3, puzzle2, puzzle1, puzzle6];
+
+const savedPuzzles = (savedPuzzleInputs as BuildPuzzleInput[]).map((input) =>
+  buildPuzzle(input),
+);
+
+function mergePuzzles(seed: Puzzle[], saved: Puzzle[]): Puzzle[] {
+  const merged = seed.slice();
+  for (const puzzle of saved) {
+    const idx = merged.findIndex((p) => p.id === puzzle.id || p.date === puzzle.date);
+    if (idx >= 0) {
+      merged[idx] = puzzle;
+    } else {
+      merged.push(puzzle);
+    }
+  }
+  return merged.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export const samplePuzzles: Puzzle[] = mergePuzzles(seedPuzzles, savedPuzzles);
 
 /** The "current" puzzle (newest date). */
-export const samplePuzzle: Puzzle = puzzle6;
+export const samplePuzzle: Puzzle = samplePuzzles[samplePuzzles.length - 1] ?? puzzle6;
 
 export function findPuzzleByDate(date: string): Puzzle | null {
   return samplePuzzles.find((p) => p.date === date) ?? null;
