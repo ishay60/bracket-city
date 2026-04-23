@@ -26,7 +26,9 @@ type Action =
   | { type: "setInput"; value: string }
   | { type: "submit"; puzzle: Puzzle }
   | { type: "peek"; puzzle: Puzzle }
+  | { type: "peekNode"; puzzle: Puzzle; nodeId: string }
   | { type: "reveal"; puzzle: Puzzle }
+  | { type: "revealNode"; puzzle: Puzzle; nodeId: string }
   | { type: "clearPop" }
   | { type: "clearShake" };
 
@@ -93,11 +95,35 @@ function reducer(state: InternalState, action: Action): InternalState {
       if (!applyPeek(action.puzzle, nextGame, nodeId)) return state;
       return { ...state, game: nextGame, tick: state.tick + 1 };
     }
+    case "peekNode": {
+      const nextGame = cloneGame(state.game);
+      nextGame.activeNodeId = action.nodeId;
+      if (!applyPeek(action.puzzle, nextGame, action.nodeId)) return state;
+      return {
+        ...state,
+        game: nextGame,
+        input: "",
+        tick: state.tick + 1,
+      };
+    }
     case "reveal": {
       const nodeId = state.game.activeNodeId;
       if (!nodeId) return state;
       const nextGame = cloneGame(state.game);
       const res = applyReveal(action.puzzle, nextGame, nodeId);
+      if (!res.ok) return state;
+      return {
+        ...state,
+        game: nextGame,
+        input: "",
+        popNodeId: res.solvedNodeId,
+        tick: state.tick + 1,
+      };
+    }
+    case "revealNode": {
+      const nextGame = cloneGame(state.game);
+      nextGame.activeNodeId = action.nodeId;
+      const res = applyReveal(action.puzzle, nextGame, action.nodeId);
       if (!res.ok) return state;
       return {
         ...state,
@@ -168,7 +194,15 @@ export function usePuzzleGame(puzzle: Puzzle) {
   }, [puzzle]);
 
   const peek = useCallback(() => dispatch({ type: "peek", puzzle }), [puzzle]);
+  const peekNode = useCallback(
+    (nodeId: string) => dispatch({ type: "peekNode", puzzle, nodeId }),
+    [puzzle],
+  );
   const reveal = useCallback(() => dispatch({ type: "reveal", puzzle }), [puzzle]);
+  const revealNode = useCallback(
+    (nodeId: string) => dispatch({ type: "revealNode", puzzle, nodeId }),
+    [puzzle],
+  );
 
   useEffect(() => {
     if (!state.popNodeId) return;
@@ -229,7 +263,9 @@ export function usePuzzleGame(puzzle: Puzzle) {
     cycleActive,
     submit,
     peek,
+    peekNode,
     reveal,
+    revealNode,
     tick: state.tick,
   } as const;
 }
