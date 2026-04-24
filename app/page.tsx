@@ -5,9 +5,9 @@ import { GameContainer } from "@/components/GameContainer";
 export const metadata: Metadata = {
   title: "חידת היום",
   description:
-    "עיר הסוגריים — פענחו את המשפט החבוי, סוגר אחר סוגר, מהעלה הפנימי החוצה.",
+    "מאמר מוסגר — פענחו את המשפט החבוי, סוגר אחר סוגר, מהעלה הפנימי החוצה.",
   openGraph: {
-    title: "עיר הסוגריים — חידת היום",
+    title: "מאמר מוסגר — חידת היום",
     description:
       "פענחו את המשפט החבוי, סוגר אחר סוגר, מהעלה הפנימי החוצה.",
   },

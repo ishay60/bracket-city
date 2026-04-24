@@ -114,7 +114,7 @@ function GameInstance({
       <Confetti active={game.complete} />
 
       <footer className="mt-6 text-center puzzle-mono text-[11px] flex items-center justify-center gap-3" style={{ color: "#6b6356" }}>
-        <span>עיר הסוגריים · גרסת עברית · פאזה 3 · השראה: Bracket City מאת בן גרוס / The Atlantic</span>
+        <span>מאמר מוסגר · גרסת עברית · פאזה 3 · השראה: Bracket City מאת בן גרוס / The Atlantic</span>
         <span style={{ opacity: 0.5 }}>·</span>
         <a href="/admin" className="underline-offset-4 hover:underline">סטודיו</a>
       </footer>

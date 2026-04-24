@@ -39,7 +39,7 @@ export function HUD({
 
       <div className="flex-1 text-center">
         <div className="puzzle-mono text-[15px] tracking-wider uppercase">
-          🟢 [עיר הסוגריים] 🟢
+          🟢 [מאמר מוסגר] 🟢
         </div>
         <div className="puzzle-mono text-[12px] text-[#6b6356] mt-0.5 flex items-center justify-center gap-2">
           <NavArrow direction="prev" disabled={!hasPrev} onClick={onPrev} />

@@ -51,7 +51,7 @@ export function buildShareText(
   const grid = buildShareGrid(puzzle, state);
   const date = formatShareDate(puzzle.date);
   return [
-    `🏙️ עיר הסוגריים · ${date}`,
+    `מאמר מוסגר · ${date}`,
     grid,
     `⭐ ${extras.rankLabel} · ${extras.finalScore} נק׳` +
       (extras.streak > 0 ? ` · 🔥 רצף ${extras.streak}` : ""),

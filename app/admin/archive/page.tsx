@@ -4,7 +4,7 @@ import { samplePuzzles } from "@/lib/puzzle/samplePuzzles";
 
 export const metadata: Metadata = {
   title: "ארכיון החידות",
-  description: "כל חידות עיר הסוגריים שפורסמו עד כה.",
+  description: "כל חידות מאמר מוסגר שפורסמו עד כה.",
   robots: { index: false, follow: false },
 };
 
@@ -19,7 +19,7 @@ export default function ArchivePage() {
             className="text-2xl font-bold tracking-tight"
             style={{ fontFamily: '"David Libre", serif' }}
           >
-            🏙️ ארכיון החידות
+            ארכיון החידות
           </h1>
           <p className="puzzle-mono text-[12px] mt-1" style={{ color: "#6b6356" }}>
             Phase 3 · Archive · {samplePuzzles.length} puzzles

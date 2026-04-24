@@ -51,7 +51,7 @@ export default function CalendarPage({
             className="text-2xl font-bold tracking-tight"
             style={{ fontFamily: '"David Libre", serif' }}
           >
-            🏙️ לוח השנה של החידות
+            לוח השנה של החידות
           </h1>
           <p className="puzzle-mono text-[12px] mt-1" style={{ color: "#6b6356" }}>
             Phase 3 · Calendar · {published} פורסמו · {gaps} חסרים החודש

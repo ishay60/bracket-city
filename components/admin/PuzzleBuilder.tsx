@@ -145,7 +145,7 @@ export function PuzzleBuilder({
             className="text-2xl font-bold tracking-tight"
             style={{ fontFamily: '"David Libre", serif' }}
           >
-            🏙️ עיר הסוגריים · סטודיו החידות
+            מאמר מוסגר · סטודיו החידות
           </h1>
           <p className="puzzle-mono text-[12px] mt-1" style={{ color: "#6b6356" }}>
             {editingId ? `Editing · ${editingId}` : "Phase 3 · Puzzle Builder"}
