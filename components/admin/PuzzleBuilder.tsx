@@ -12,6 +12,7 @@ import {
 import type { BracketSpec, BuildPuzzleInput, Puzzle } from "@/lib/puzzle";
 import { AnswersTable, emptyAnswerRow } from "./AnswersTable";
 import type { AnswerRow } from "./AnswersTable";
+import { EventSuggestions } from "./EventSuggestions";
 import { GameContainerPreview } from "./GameContainerPreview";
 import { TreeView } from "./TreeView";
 
@@ -177,6 +178,14 @@ export function PuzzleBuilder({
                 <TextInput value={date} onChange={setDate} className="puzzle-mono" />
               </Field>
             </div>
+          </Card>
+
+          <Card title="אירועים היסטוריים בתאריך זה">
+            <EventSuggestions
+              date={date}
+              onUseAsContext={setHistoricalContext}
+              onUseAsSentence={setFinalSentence}
+            />
           </Card>
 
           <Card title="המשפט הסופי">
