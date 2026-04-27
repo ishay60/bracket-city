@@ -9,13 +9,17 @@ export function EndGameScreen({
   puzzle,
   game,
   streak,
+  longestStreak,
 }: {
   puzzle: Puzzle;
   game: UsePuzzleGame;
   streak: number;
+  longestStreak: number;
 }) {
   const score = computeScore(puzzle, game.game);
   const rankLabel = RANK_LABEL_HE[score.rank];
+  const efficiencyPct =
+    score.efficiency != null ? Math.round(score.efficiency * 100) : null;
   const rankColor =
     score.rank === "kingmaker"
       ? "#b45309"
@@ -95,9 +99,42 @@ export function EndGameScreen({
 
       <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 puzzle-mono text-[12px]">
         <Breakdown label="בסיס" value={score.base} />
-        <Breakdown label="טעויות" value={`−${score.wrongPenalty}`} warn />
-        <Breakdown label="הצצות" value={`−${score.peekPenalty}`} warn />
-        <Breakdown label="חשיפות" value={`−${score.revealPenalty}`} warn />
+        <Breakdown
+          label="טעויות"
+          value={
+            game.game.wrongGuesses > 0
+              ? `${game.game.wrongGuesses} · −${score.wrongPenalty}`
+              : "0"
+          }
+          warn={game.game.wrongGuesses > 0}
+        />
+        <Breakdown
+          label="הצצות"
+          value={
+            game.game.peeks.size > 0
+              ? `${game.game.peeks.size} · −${score.peekPenalty}`
+              : "0"
+          }
+          warn={game.game.peeks.size > 0}
+        />
+        <Breakdown
+          label="חשיפות"
+          value={
+            game.game.reveals.size > 0
+              ? `${game.game.reveals.size} · −${score.revealPenalty}`
+              : "0"
+          }
+          warn={game.game.reveals.size > 0}
+        />
+      </div>
+
+      <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 puzzle-mono text-[12px]">
+        <Breakdown
+          label="יעילות הקלדה"
+          value={efficiencyPct != null ? `${efficiencyPct}%` : "—"}
+        />
+        <Breakdown label="רצף נוכחי" value={`🔥 ${streak}`} />
+        <Breakdown label="רצף שיא" value={`★ ${longestStreak}`} />
       </div>
 
       <div
