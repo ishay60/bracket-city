@@ -6,6 +6,7 @@ import {
   applyGuessToSolvableLeaf,
   applyPeek,
   applyReveal,
+  collectBrackets,
   createGameState,
   findNode,
   getSolvableLeaves,
@@ -29,6 +30,7 @@ type Action =
   | { type: "peekNode"; puzzle: Puzzle; nodeId: string }
   | { type: "reveal"; puzzle: Puzzle }
   | { type: "revealNode"; puzzle: Puzzle; nodeId: string }
+  | { type: "forceComplete"; puzzle: Puzzle }
   | { type: "clearPop" }
   | { type: "clearShake" };
 
@@ -133,6 +135,21 @@ function reducer(state: InternalState, action: Action): InternalState {
         tick: state.tick + 1,
       };
     }
+    case "forceComplete": {
+      const ids = collectBrackets(action.puzzle.tree).map((n) => n.id);
+      const nextGame = cloneGame(state.game);
+      nextGame.solved = new Set(ids);
+      nextGame.solveOrder = [...ids];
+      nextGame.activeNodeId = null;
+      return {
+        ...state,
+        game: nextGame,
+        input: "",
+        popNodeId: null,
+        shakeNodeId: null,
+        tick: state.tick + 1,
+      };
+    }
     case "clearPop":
       return { ...state, popNodeId: null };
     case "clearShake":
@@ -178,17 +195,6 @@ export function usePuzzleGame(puzzle: Puzzle) {
     dispatch({ type: "setInput", value });
   }, []);
 
-  const cycleActive = useCallback(
-    (direction: "prev" | "next") => {
-      const leaves = getSolvableLeaves(puzzle.tree, stateRef.current.game.solved);
-      if (leaves.length === 0) return;
-      const idx = leaves.findIndex((n) => n.id === stateRef.current.game.activeNodeId);
-      const next = leaves[(idx + (direction === "prev" ? -1 : 1) + leaves.length) % leaves.length];
-      if (next) dispatch({ type: "setActive", nodeId: next.id });
-    },
-    [puzzle.tree],
-  );
-
   const submit = useCallback(() => {
     dispatch({ type: "submit", puzzle });
   }, [puzzle]);
@@ -201,6 +207,10 @@ export function usePuzzleGame(puzzle: Puzzle) {
   const reveal = useCallback(() => dispatch({ type: "reveal", puzzle }), [puzzle]);
   const revealNode = useCallback(
     (nodeId: string) => dispatch({ type: "revealNode", puzzle, nodeId }),
+    [puzzle],
+  );
+  const forceComplete = useCallback(
+    () => dispatch({ type: "forceComplete", puzzle }),
     [puzzle],
   );
 
@@ -231,7 +241,7 @@ export function usePuzzleGame(puzzle: Puzzle) {
     }
   }, [solvableLeaves, state.game.activeNodeId, state.game.solved, puzzle.tree, complete]);
 
-  // The answer input in ControlsBar owns all typing + Enter/Tab/Escape. We
+  // The answer input in ControlsBar owns all typing + Enter/Escape. We
   // keep a tiny global fallback: if the player clicks somewhere off the input
   // and starts typing a printable character, refocus the input so no keystroke
   // is lost (matches bracket.city's "just start typing" affordance).
@@ -260,12 +270,12 @@ export function usePuzzleGame(puzzle: Puzzle) {
     complete,
     setActive,
     setInputValue,
-    cycleActive,
     submit,
     peek,
     peekNode,
     reveal,
     revealNode,
+    forceComplete,
     tick: state.tick,
   } as const;
 }

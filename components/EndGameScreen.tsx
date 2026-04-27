@@ -33,6 +33,16 @@ export function EndGameScreen({
     () => buildShareText(puzzle, game.game, { finalScore: score.finalScore, rankLabel, streak }),
     [puzzle, game.game, score.finalScore, rankLabel, streak],
   );
+  const previewText = useMemo(
+    () =>
+      buildShareText(
+        puzzle,
+        game.game,
+        { finalScore: score.finalScore, rankLabel, streak },
+        { includeLink: false },
+      ),
+    [puzzle, game.game, score.finalScore, rankLabel, streak],
+  );
 
   const [copied, setCopied] = useState(false);
   const share = async () => {
@@ -142,7 +152,7 @@ export function EndGameScreen({
         style={{ backgroundColor: "#ffffff", border: "1px solid #e7e0d0" }}
         aria-label="גריד שיתוף"
       >
-        {shareText}
+        {previewText}
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2 justify-end">

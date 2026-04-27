@@ -76,7 +76,13 @@ export function PuzzleBoard({ tree, game }: Props) {
     >
       <div className="whitespace-normal break-words">
         {tree.children?.map((n) => (
-          <NodeView key={n.id} node={n} game={game} onHelpRequest={requestHelp} />
+          <NodeView
+            key={n.id}
+            node={n}
+            game={game}
+            onHelpRequest={requestHelp}
+            highlightActive={!!helpPrompt}
+          />
         ))}
       </div>
       {helpPrompt ? (
@@ -96,14 +102,23 @@ function NodeView({
   node,
   game,
   onHelpRequest,
+  highlightActive,
 }: {
   node: PuzzleNode;
   game: UsePuzzleGame;
   onHelpRequest: (node: PuzzleNode) => void;
+  highlightActive: boolean;
 }) {
   if (node.type === "text") return <TextRun content={node.content ?? ""} />;
   if (node.type === "bracket") {
-    return <BracketView node={node} game={game} onHelpRequest={onHelpRequest} />;
+    return (
+      <BracketView
+        node={node}
+        game={game}
+        onHelpRequest={onHelpRequest}
+        highlightActive={highlightActive}
+      />
+    );
   }
   return null;
 }
@@ -141,15 +156,17 @@ function BracketView({
   node,
   game,
   onHelpRequest,
+  highlightActive,
 }: {
   node: PuzzleNode;
   game: UsePuzzleGame;
   onHelpRequest: (node: PuzzleNode) => void;
+  highlightActive: boolean;
 }) {
   const { game: state, popNodeId, shakeNodeId } = game;
   const solved = state.solved.has(node.id);
   const solvable = isNodeSolvable(node, state.solved);
-  const active = state.activeNodeId === node.id;
+  const active = highlightActive && state.activeNodeId === node.id;
   const peeked = state.peeks.has(node.id);
   const revealed = state.reveals.has(node.id);
   const justSolved = popNodeId === node.id;
@@ -218,7 +235,13 @@ function BracketView({
     <span role="group" aria-label="סוגר נעול — השלימו את הסוגרים שבפנים">
       <span>[</span>
       {(node.children ?? []).map((c) => (
-        <NodeView key={c.id} node={c} game={game} onHelpRequest={onHelpRequest} />
+        <NodeView
+          key={c.id}
+          node={c}
+          game={game}
+          onHelpRequest={onHelpRequest}
+          highlightActive={highlightActive}
+        />
       ))}
       <span>]</span>
     </span>
@@ -287,7 +310,7 @@ function HelpConfirmDialog({
             className="px-3 py-1.5 rounded-md border border-[#e7e0d0] puzzle-mono text-[12px]"
             style={{ color: "#171412", backgroundColor: "#ffffff" }}
           >
-            [cancel]
+            [ביטול]
           </button>
           <button
             type="button"
@@ -295,7 +318,7 @@ function HelpConfirmDialog({
             className="px-3 py-1.5 rounded-md puzzle-mono text-[12px]"
             style={{ backgroundColor: "#171412", color: "#fbfaf4" }}
           >
-            {isPeek ? "[peek −5]" : "[reveal −20]"}
+            {isPeek ? "[הצצה]" : "[reveal −20]"}
           </button>
         </div>
       </div>
