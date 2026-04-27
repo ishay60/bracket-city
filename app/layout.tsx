@@ -33,11 +33,10 @@ export const metadata: Metadata = {
     description,
   },
   robots: { index: true, follow: true },
-  icons: { icon: "/favicon.ico" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fbfaf4",
+  themeColor: "#f5f5f5",
 };
 
 export default function RootLayout({

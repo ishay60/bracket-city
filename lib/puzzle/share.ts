@@ -43,19 +43,27 @@ export function buildShareGrid(puzzle: Puzzle, state: GameState): string {
   return rows.join("\n");
 }
 
+const SHARE_BASE_URL = "https://maamar-musgar.vercel.app";
+
 export function buildShareText(
   puzzle: Puzzle,
   state: GameState,
   extras: { finalScore: number; rankLabel: string; streak: number },
+  options: { includeLink?: boolean } = {},
 ): string {
+  const { includeLink = true } = options;
   const grid = buildShareGrid(puzzle, state);
   const date = formatShareDate(puzzle.date);
-  return [
+  const lines = [
     `מאמר מוסגר · ${date}`,
     grid,
     `⭐ ${extras.rankLabel} · ${extras.finalScore} נק׳` +
       (extras.streak > 0 ? ` · 🔥 רצף ${extras.streak}` : ""),
-  ].join("\n");
+  ];
+  if (includeLink) {
+    lines.push(`שחקו גם: ${SHARE_BASE_URL}/?date=${puzzle.date}`);
+  }
+  return lines.join("\n");
 }
 
 function formatShareDate(iso: string): string {

@@ -36,10 +36,6 @@ export function ControlsBar({ game }: { game: UsePuzzleGame }) {
               game.setInputValue("");
               return;
             }
-            if (e.key === "Tab") {
-              e.preventDefault();
-              game.cycleActive(e.shiftKey ? "prev" : "next");
-            }
           }}
           disabled={!canAct}
           placeholder="הקלידו תשובה…"
@@ -66,7 +62,7 @@ export function ControlsBar({ game }: { game: UsePuzzleGame }) {
       </div>
       <div className="flex items-center gap-3 flex-wrap">
         <span className="puzzle-mono text-[12px]" style={{ color: "#6b6356" }}>
-          אין צורך ללחוץ — פשוט התחילו להקליד. Enter לשליחה · Tab למעבר · Esc לניקוי · לחיצה על סוגר כחול לעזרה
+          אין צורך ללחוץ — פשוט התחילו להקליד. Enter לשליחה · Esc לניקוי · לחיצה על סוגר כחול לעזרה
         </span>
         <div className="flex-1" />
       </div>

@@ -41,7 +41,6 @@ export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => vo
           </li>
           <li>
             <b>מקלידים בלי ללחוץ.</b> פשוט התחילו להקליד את התשובה. <span className="puzzle-mono">Enter</span> לשליחה,
-            <span className="puzzle-mono"> Tab</span> למעבר בין סוגרים פתוחים,
             <span className="puzzle-mono"> Esc</span> לניקוי.
           </li>
           <li>
