@@ -108,7 +108,12 @@ function GameInstance({
       </article>
 
       {game.complete ? (
-        <EndGameScreen puzzle={puzzle} game={game} streak={streak.data.current} />
+        <EndGameScreen
+          puzzle={puzzle}
+          game={game}
+          streak={streak.data.current}
+          longestStreak={streak.data.longest}
+        />
       ) : null}
 
       <Confetti active={game.complete} />
