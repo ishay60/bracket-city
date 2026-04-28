@@ -1,23 +1,24 @@
 "use client";
 
 /**
- * Compact Hebrew on-screen keyboard for mobile, modeled on Hebrew Wordle
- * (וורדעל) rather than a full QWERTY clone:
+ * Compact Hebrew on-screen keyboard for mobile. Letter positions match the
+ * standard Israeli (QWERTY-mapped) Hebrew layout, so muscle memory from a
+ * physical keyboard transfers directly:
  *
- *   row 1:  ק ר א ט ו פ              ⌫
- *   row 2:  ש ד ג כ ע י ח ל
- *   row 3:  ז ס ב ה נ מ צ ת          ↵
- *   row 4:  ───── רווח ─────
+ *   row 1 (E…P):   ק ר א ט ו ן ם פ                  ⌫
+ *   row 2 (A…;):   ש ד ג כ ע י ח ל ך ף
+ *   row 3 (Z…/):   ז ס ב ה נ מ צ ת ץ                ↵
+ *   row 4:         ─────── רווח ───────
  *
- * Final letters (sofiot) are intentionally absent — `normalizeHebrew`
- * folds them to their base form, so the user never has to find ך / ם / ן
- * / ף / ץ on the keyboard. The space row is a thin strip because the
- * primary keyboard surface should be the three letter rows.
+ * Final letters (sofiot) live in their canonical positions on the layout —
+ * `normalizeHebrew` still folds them when matching, so a player typing כ for
+ * a word ending in ך is accepted, but the keyboard doesn't surprise anyone
+ * who's used to a Hebrew keyboard.
  */
 
-const ROW_1 = ["ק", "ר", "א", "ט", "ו", "פ"];
-const ROW_2 = ["ש", "ד", "ג", "כ", "ע", "י", "ח", "ל"];
-const ROW_3 = ["ז", "ס", "ב", "ה", "נ", "מ", "צ", "ת"];
+const ROW_1 = ["ק", "ר", "א", "ט", "ו", "ן", "ם", "פ"];
+const ROW_2 = ["ש", "ד", "ג", "כ", "ע", "י", "ח", "ל", "ך", "ף"];
+const ROW_3 = ["ז", "ס", "ב", "ה", "נ", "מ", "צ", "ת", "ץ"];
 
 interface Props {
   disabled?: boolean;
@@ -49,7 +50,7 @@ export function HebrewKeyboard({ disabled, onChar, onBackspace, onEnter }: Props
       aria-disabled={disabled || undefined}
     >
       <div className="flex flex-col gap-1.5">
-        <div className="flex justify-center gap-1">
+        <div className="flex justify-center gap-[3px]">
           {ROW_1.map(letterBtn)}
           <button
             type="button"
@@ -61,8 +62,8 @@ export function HebrewKeyboard({ disabled, onChar, onBackspace, onEnter }: Props
             ⌫
           </button>
         </div>
-        <div className="flex justify-center gap-1">{ROW_2.map(letterBtn)}</div>
-        <div className="flex justify-center gap-1">
+        <div className="flex justify-center gap-[3px]">{ROW_2.map(letterBtn)}</div>
+        <div className="flex justify-center gap-[3px]">
           {ROW_3.map(letterBtn)}
           <button
             type="button"
