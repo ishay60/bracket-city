@@ -71,7 +71,7 @@ export function PuzzleBoard({ tree, game }: Props) {
 
   return (
     <div
-      className="font-hebrew text-[19px] sm:text-[21px] leading-[1.9] text-[#171412]"
+      className="font-hebrew text-[17px] sm:text-[21px] leading-[1.7] sm:leading-[1.9] text-[#171412]"
       style={{ fontFamily: '"David Libre", "Frank Ruhl Libre", "Times New Roman", serif' }}
     >
       <div className="whitespace-normal break-words">
@@ -173,9 +173,10 @@ function BracketView({
   const shaking = shakeNodeId === node.id;
 
   if (solved) {
+    const flashClass = justSolved ? "just-solved" : "";
     return (
       <span
-        className={justSolved ? "inline-block animate-solvePop" : "inline"}
+        className={`inline ${flashClass}`.trim()}
         aria-label={revealed ? `נחשף: ${node.answer}` : `נפתר: ${node.answer}`}
       >
         {revealed ? (
@@ -210,7 +211,7 @@ function BracketView({
         type="button"
         onClick={() => onHelpRequest(node)}
         className={
-          "bracket-leaf rounded-[4px] px-[3px] cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366f1] " +
+          "bracket-leaf cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366f1] " +
           (shaking ? "animate-shake" : "")
         }
         style={commonStyle}

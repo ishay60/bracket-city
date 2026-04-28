@@ -90,7 +90,7 @@ function GameInstance({
   const next = neighborPuzzleDate(puzzle.date, "next");
 
   return (
-    <main className="mx-auto max-w-2xl px-3 sm:px-4 py-6 sm:py-10">
+    <main className="mx-auto max-w-2xl px-2 sm:px-4 py-3 sm:py-10">
       <article
         className="rounded-xl overflow-hidden"
         style={{
@@ -99,7 +99,7 @@ function GameInstance({
           boxShadow: "0 1px 0 rgba(0,0,0,0.03), 0 12px 30px -18px rgba(0,0,0,0.15)",
         }}
       >
-        <div className="px-4 sm:px-6 pt-5">
+        <div className="px-3 sm:px-6 pt-3 sm:pt-5">
           <HUD
             puzzle={puzzle}
             game={game}
@@ -113,11 +113,11 @@ function GameInstance({
         </div>
         {game.complete ? null : (
           <>
-            <div className="px-4 sm:px-6 pt-6 pb-2">
+            <div className="px-3 sm:px-6 pt-4 sm:pt-6 pb-2">
               <PuzzleBoard tree={puzzle.tree} game={game} />
               <AnswerBank tree={puzzle.tree} game={game} />
             </div>
-            <div className="px-4 sm:px-6 pb-6 pt-3" style={{ borderTop: "1px solid #e7e0d0" }}>
+            <div className="px-3 sm:px-6 pb-3 sm:pb-6 pt-3" style={{ borderTop: "1px solid #e7e0d0" }}>
               <ControlsBar game={game} />
             </div>
           </>

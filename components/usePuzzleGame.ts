@@ -216,7 +216,7 @@ export function usePuzzleGame(puzzle: Puzzle) {
 
   useEffect(() => {
     if (!state.popNodeId) return;
-    const t = setTimeout(() => dispatch({ type: "clearPop" }), 420);
+    const t = setTimeout(() => dispatch({ type: "clearPop" }), 1600);
     return () => clearTimeout(t);
   }, [state.popNodeId]);
 
