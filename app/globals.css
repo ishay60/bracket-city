@@ -83,14 +83,14 @@ input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
  * with a non-Hebrew system layout is hard.
  */
 .keyboard-key {
-  min-height: 38px;
-  padding: 0 6px;
+  min-height: 34px;
+  padding: 0 4px;
   border-radius: 6px;
   background: #ffffff;
   border: 1px solid #e7e0d0;
   color: #171412;
   font-family: "David Libre", "Frank Ruhl Libre", serif;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -99,5 +99,8 @@ input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   -webkit-user-select: none;
   touch-action: manipulation;
 }
+@media (min-height: 720px) {
+  .keyboard-key { min-height: 38px; font-size: 18px; }
+}
 .keyboard-key:active { background: #f5efe0; transform: translateY(1px); }
-.keyboard-key.is-wide { padding: 0 10px; font-family: "IBM Plex Mono", Menlo, ui-monospace, monospace; font-size: 13px; }
+.keyboard-key.is-wide { padding: 0 8px; font-family: "IBM Plex Mono", Menlo, ui-monospace, monospace; font-size: 13px; }

@@ -39,7 +39,7 @@ export function ControlsBar({ game }: { game: UsePuzzleGame }) {
   };
 
   return (
-    <div className="mt-4 sm:mt-5 space-y-2">
+    <div className="mt-0 sm:mt-5 space-y-1.5 sm:space-y-2">
       {/* Desktop: text input + enter button. Hidden on mobile — the on-screen
           keyboard below handles input there. */}
       <div className="hidden sm:flex items-stretch gap-2">
@@ -119,7 +119,7 @@ export function ControlsBar({ game }: { game: UsePuzzleGame }) {
           dir="auto"
           aria-label="הטקסט שהוקלד"
           className={
-            "min-h-[40px] rounded-md px-3 py-2 puzzle-mono text-[16px] text-right flex items-center justify-between gap-2 " +
+            "min-h-[34px] rounded-md px-3 py-1.5 puzzle-mono text-[15px] text-right flex items-center justify-between gap-2 " +
             (wrongFlash ? "input-wrong" : "")
           }
           style={{
@@ -147,7 +147,7 @@ export function ControlsBar({ game }: { game: UsePuzzleGame }) {
             </span>
           ) : null}
         </div>
-        <div className="pt-2">
+        <div className="pt-1.5">
           <HebrewKeyboard
             disabled={!canAct}
             onChar={onKeyboardChar}
