@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
+import { isAdminEnabled } from "@/lib/adminAccess";
 import { buildPuzzle } from "@/lib/puzzle/build";
 import type { BuildPuzzleInput } from "@/lib/puzzle/build";
 
@@ -9,6 +10,10 @@ export const dynamic = "force-dynamic";
 const DATA_FILE = path.join(process.cwd(), "data", "puzzles.json");
 
 export async function POST(request: NextRequest) {
+  if (!isAdminEnabled()) {
+    return NextResponse.json({ ok: false, error: "Not found." }, { status: 404 });
+  }
+
   if (process.env.NODE_ENV !== "development") {
     return NextResponse.json(
       { ok: false, error: "Puzzle saving is only enabled in development." },
