@@ -20,8 +20,9 @@ export function GameContainer() {
   const initialDate = params?.get("date") && findPuzzleByDate(params.get("date")!)
     ? params.get("date")!
     : samplePuzzle.date;
+  const studioEnabled = process.env.NEXT_PUBLIC_WORKSPACE === "local";
   const previewEnd =
-    process.env.NEXT_PUBLIC_WORKSPACE === "local" &&
+    studioEnabled &&
     params?.get("preview") === "end";
   const [date, setDate] = useState(initialDate);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -37,6 +38,7 @@ export function GameContainer() {
       helpOpen={helpOpen}
       setHelpOpen={setHelpOpen}
       previewEnd={previewEnd}
+      studioEnabled={studioEnabled}
     />
   );
 }
@@ -47,12 +49,14 @@ function GameInstance({
   helpOpen,
   setHelpOpen,
   previewEnd,
+  studioEnabled,
 }: {
   puzzle: Puzzle;
   setDate: (d: string) => void;
   helpOpen: boolean;
   setHelpOpen: (v: boolean) => void;
   previewEnd: boolean;
+  studioEnabled: boolean;
 }) {
   const game = usePuzzleGame(puzzle);
   const streak = useStreak();
@@ -166,8 +170,12 @@ function GameInstance({
         style={{ color: "#6b6356" }}
       >
         <span>מאמר מוסגר · גרסת עברית</span>
-        <span style={{ opacity: 0.5 }}>·</span>
-        <a href="/admin" className="underline-offset-4 hover:underline">סטודיו</a>
+        {studioEnabled ? (
+          <>
+            <span style={{ opacity: 0.5 }}>·</span>
+            <a href="/admin" className="underline-offset-4 hover:underline">סטודיו</a>
+          </>
+        ) : null}
       </footer>
 
       <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
