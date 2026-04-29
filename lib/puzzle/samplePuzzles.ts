@@ -35,6 +35,7 @@ const puzzle1 = buildPuzzle({
     { answer: "אביב", clueType: "definition", difficulty: "easy" },
   ],
   tags: ["היסטוריה", "תש״ח", "ישראל"],
+  difficulty: "easy",
 });
 
 const puzzle2 = buildPuzzle({
@@ -57,6 +58,7 @@ const puzzle2 = buildPuzzle({
     { answer: "ירושלים", clueType: "trivia", difficulty: "easy" },
   ],
   tags: ["היסטוריה", "שפה"],
+  difficulty: "medium",
 });
 
 const puzzle3 = buildPuzzle({
@@ -76,6 +78,7 @@ const puzzle3 = buildPuzzle({
     { answer: "אירופה", clueType: "trivia", difficulty: "easy" },
   ],
   tags: ["היסטוריה", "ציונות"],
+  difficulty: "easy",
 });
 
 const puzzle4 = buildPuzzle({
@@ -97,6 +100,7 @@ const puzzle4 = buildPuzzle({
     { answer: "זהב", clueType: "definition", difficulty: "easy" },
   ],
   tags: ["מוזיקה", "ירושלים"],
+  difficulty: "medium",
 });
 
 const puzzle5 = buildPuzzle({
@@ -118,6 +122,7 @@ const puzzle5 = buildPuzzle({
     { answer: "ישראל", clueType: "trivia", difficulty: "easy" },
   ],
   tags: ["היסטוריה", "פוליטיקה"],
+  difficulty: "medium",
 });
 
 const puzzle6 = buildPuzzle({
@@ -147,6 +152,7 @@ const puzzle6 = buildPuzzle({
     { answer: "אומ", acceptedAnswers: ["אום"], clueType: "wordplay", difficulty: "medium" },
   ],
   tags: ["ניסוי", "שפה", "פריז"],
+  difficulty: "hard",
 });
 
 const seedPuzzles: Puzzle[] = [puzzle5, puzzle4, puzzle3, puzzle2, puzzle1, puzzle6];
