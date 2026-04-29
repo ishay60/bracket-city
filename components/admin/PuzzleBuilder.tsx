@@ -9,7 +9,8 @@ import {
   serializePuzzleForExport,
   validatePuzzleAuthoring,
 } from "@/lib/puzzle";
-import type { BracketSpec, BuildPuzzleInput, Puzzle } from "@/lib/puzzle";
+import type { BracketSpec, BuildPuzzleInput, Difficulty, Puzzle } from "@/lib/puzzle";
+import { DIFFICULTY_EMOJI, DIFFICULTY_LABEL_HE } from "@/lib/puzzle";
 import { AnswersTable, emptyAnswerRow } from "./AnswersTable";
 import type { AnswerRow } from "./AnswersTable";
 import { EventSuggestions } from "./EventSuggestions";
@@ -56,6 +57,9 @@ export function PuzzleBuilder({
   );
   const [tags] = useState<string[]>(initialPuzzle?.tags ?? []);
   const [maxScore] = useState<number | undefined>(initialPuzzle?.maxScore);
+  const [difficulty, setDifficulty] = useState<Difficulty | "">(
+    initialPuzzle?.difficulty ?? "",
+  );
   const [bracketString, setBracketString] = useState(
     seed?.bracketString ?? STARTER.bracketString,
   );
@@ -115,6 +119,7 @@ export function PuzzleBuilder({
       specs,
       tags,
       maxScore,
+      difficulty: difficulty || undefined,
     }),
     [
       editingId,
@@ -126,6 +131,7 @@ export function PuzzleBuilder({
       specs,
       tags,
       maxScore,
+      difficulty,
     ],
   );
 
@@ -176,6 +182,9 @@ export function PuzzleBuilder({
               </Field>
               <Field label="תאריך (ISO)">
                 <TextInput value={date} onChange={setDate} className="puzzle-mono" />
+              </Field>
+              <Field label="רמת קושי של החידה">
+                <DifficultySelect value={difficulty} onChange={setDifficulty} />
               </Field>
             </div>
           </Card>
@@ -302,6 +311,32 @@ function TextInput({
       className={`w-full rounded-md px-3 py-2 text-[14px] ${className}`}
       style={{ border: "1px solid #e7e0d0", backgroundColor: "#fbfaf4" }}
     />
+  );
+}
+
+function DifficultySelect({
+  value,
+  onChange,
+}: {
+  value: Difficulty | "";
+  onChange: (next: Difficulty | "") => void;
+}) {
+  const options: Difficulty[] = ["easy", "medium", "hard"];
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value as Difficulty | "")}
+      className="w-full rounded-md px-3 py-2 text-[14px] puzzle-mono"
+      style={{ border: "1px solid #e7e0d0", backgroundColor: "#fbfaf4" }}
+      aria-label="רמת קושי של החידה"
+    >
+      <option value="">— ללא דירוג —</option>
+      {options.map((d) => (
+        <option key={d} value={d}>
+          {DIFFICULTY_EMOJI[d]} {DIFFICULTY_LABEL_HE[d]}
+        </option>
+      ))}
+    </select>
   );
 }
 

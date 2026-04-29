@@ -148,6 +148,7 @@ export function serializePuzzleForExport(puzzle: Puzzle): string {
       historicalContext: puzzle.historicalContext,
       totalBrackets: puzzle.totalBrackets,
       maxScore: puzzle.maxScore,
+      difficulty: puzzle.difficulty,
       tree: stripRuntimeFields(puzzle.tree),
       tags: puzzle.tags,
     },

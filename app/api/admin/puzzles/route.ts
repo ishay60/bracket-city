@@ -87,6 +87,10 @@ function parseBuildPuzzleInput(value: unknown): BuildPuzzleInput {
     tags: Array.isArray(value.tags)
       ? value.tags.filter((tag): tag is string => typeof tag === "string")
       : undefined,
+    difficulty:
+      value.difficulty === "easy" || value.difficulty === "medium" || value.difficulty === "hard"
+        ? value.difficulty
+        : undefined,
   };
 }
 
